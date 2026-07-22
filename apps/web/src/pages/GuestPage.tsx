@@ -49,7 +49,9 @@ export function GuestPage() {
     searchInputRef.current?.focus();
   };
 
-  return <Shell title={state.jukeboxName}>
+  return <Shell title={state.jukeboxName} headerAction={state.guestViewSettings.showAdminLink
+    ? <Link className="header-admin-link" to="/admin" aria-label="Admin controls" title="Admin controls"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M10 14v6" /></svg></Link>
+    : undefined}>
     <div className="guest-grid">
       <div className="primary-column">
         <NowPlaying queue={state.queue} playback={state.playback} showGuestName={state.guestViewSettings.showGuestNames} />
@@ -72,7 +74,6 @@ export function GuestPage() {
         <section className="card identity"><span className="kicker">You are</span>{state.guestViewSettings.allowNicknameChanges
           ? <div className="inline-form"><input aria-label="Guest name" value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={32} /><button className="secondary" onClick={() => void saveName()}>Save</button></div>
           : <><strong className="assigned-name">{state.guest.nickname}</strong><p className="status-note">Names are assigned automatically.</p></>}</section>
-        {state.guestViewSettings.showAdminLink && <Link className="admin-link" to="/admin">Admin controls →</Link>}
       </aside>
     </div>
   </Shell>;

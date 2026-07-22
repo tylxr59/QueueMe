@@ -172,6 +172,36 @@ button:disabled {
   align-items: center;
 }
 
+.header-admin-link {
+  width: 42px;
+  height: 42px;
+  margin-left: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--field);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.header-admin-link:hover {
+  border-color: var(--line-strong);
+  background: var(--panel-hover);
+}
+
+.header-admin-link:active {
+  transform: scale(0.96);
+}
+
+.header-admin-link svg {
+  width: 21px;
+  height: 21px;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;

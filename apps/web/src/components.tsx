@@ -1,9 +1,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { PlaybackSnapshot, QueueItemView, QueueSnapshot } from "@queueme/contracts";
 
-export function Shell({ children, title = "QueueMe", eyebrow }: { children: ReactNode; title?: string; eyebrow?: string }) {
+export function Shell({ children, title = "QueueMe", eyebrow, headerAction }: {
+  children: ReactNode;
+  title?: string;
+  eyebrow?: string;
+  headerAction?: ReactNode;
+}) {
   return <div className="shell">
-    <header className="topbar"><a className="brand" href="/"><span className="brand-mark" aria-hidden="true">Q</span><span>{eyebrow && <small>{eyebrow}</small>}{title}</span></a></header>
+    <header className="topbar"><a className="brand" href="/"><span className="brand-mark" aria-hidden="true">Q</span><span>{eyebrow && <small>{eyebrow}</small>}{title}</span></a>{headerAction}</header>
     <main>{children}</main>
   </div>;
 }
