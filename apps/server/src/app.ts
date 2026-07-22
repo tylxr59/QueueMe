@@ -201,8 +201,8 @@ export async function buildApp() {
     const resolved = resolver.consume(input.resolutionId, input.spotifyTrackId, guest.id);
     const snapshot = queue.enqueue({ ...resolved, guestId: guest.id, clientRequestId: input.clientRequestId });
     io.emit("queue:updated", snapshot);
-    void player.onQueueChanged();
-    return reply.code(201).send(snapshot);
+    await player.onQueueChanged();
+    return reply.code(201).send(queue.snapshot());
   });
 
   app.post("/api/v1/admin/session", async (request, reply) => {

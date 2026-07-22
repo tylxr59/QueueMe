@@ -254,7 +254,7 @@ Block reasons include setup, authentication, device availability, external playb
 - Queue exhaustion pauses the Spotify device to prevent autoplay.
 - Device changes while playing pause and require Resume.
 - Missing device IDs may rebind only to one exact name/type match.
-- Restart with a current item always becomes paused restart recovery.
+- If QueueMe restarts while it had been playing, it reconciles the saved item with Spotify and automatically adopts or resumes matching playback. Device or track conflicts remain blocked for safe manual recovery.
 
 ## Interfaces
 

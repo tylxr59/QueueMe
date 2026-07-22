@@ -20,8 +20,13 @@ export class PlayerCoordinator {
     private readonly emit: Emitter,
   ) {
     const current = queue.current();
-    if (current) this.writeState("paused", "restart_recovery", undefined, false);
-    else this.writeState("idle", null, undefined, false);
+    const previous = this.snapshot();
+    if (current) {
+      this.writeState("paused", "restart_recovery", undefined, false);
+      if (previous.status === "playing") {
+        void this.serial(() => this.recoverAfterRestart(previous.progressMs)).catch(() => undefined);
+      }
+    } else this.writeState("idle", null, undefined, false);
     this.schedulePoll();
   }
 
@@ -146,6 +151,42 @@ export class PlayerCoordinator {
       this.writeState("playing", null, positionMs);
     } catch (error) {
       this.blockFromError(error, positionMs);
+    }
+  }
+
+  private async recoverAfterRestart(checkpointProgressMs: number) {
+    const current = this.queue.current();
+    if (!current) {
+      this.writeState("idle", null, 0);
+      return;
+    }
+    if (!this.spotify.isConnected()) {
+      this.writeState("blocked", "auth_required", checkpointProgressMs, true, "Connect the Spotify owner account.");
+      return;
+    }
+    try {
+      const device = await this.resolveDevice();
+      if (!device) {
+        this.writeState("blocked", "device_required", checkpointProgressMs, true, "Select an available Spotify Connect device.");
+        return;
+      }
+      const remote = await this.spotify.getPlaybackState();
+      if (remote.deviceId && remote.deviceId !== device.id) {
+        this.writeState("blocked", "external_playback", checkpointProgressMs, true, "Playback moved to another Spotify device.");
+        return;
+      }
+      if (remote.trackUri && remote.trackUri !== current.track.playbackUri) {
+        this.writeState("blocked", "external_playback", checkpointProgressMs, true, "Spotify is playing a track outside the QueueMe queue.");
+        return;
+      }
+      if (remote.trackUri === current.track.playbackUri && remote.isPlaying) {
+        this.writeState("playing", null, remote.progressMs);
+        return;
+      }
+      const positionMs = remote.trackUri === current.track.playbackUri ? remote.progressMs : checkpointProgressMs;
+      await this.startCurrent(positionMs);
+    } catch (error) {
+      this.blockFromError(error, checkpointProgressMs);
     }
   }
 
