@@ -47,7 +47,7 @@ export function GuestPage() {
         <NowPlaying queue={state.queue} playback={state.playback} />
         <section className="card add-card"><span className="kicker">Your turn</span><h1>Add a track</h1>
           <p>Paste a Spotify track link or search by song and artist.</p>
-          <form className="search-form" onSubmit={resolve}><input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Dancing Queen ABBA" required maxLength={300} /><button disabled={busy}>{busy ? "Working…" : "Find track"}</button></form>
+          <form className="search-form" onSubmit={resolve}><input aria-label="Song, artist, or Spotify link" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Dancing Queen ABBA" required maxLength={300} /><button disabled={busy}>{busy ? "Working…" : "Find track"}</button></form>
           <ErrorBanner message={error} />
           {results?.kind === "candidates" && <div className="results">{results.tracks.map((track) => <button className="result" key={track.providerTrackId} disabled={busy} onClick={() => void enqueue(results, track.providerTrackId)}>
             {track.artworkUrl ? <img src={track.artworkUrl} alt="" /> : <span className="thumb-placeholder">♪</span>}<span><strong>{track.title}</strong><small>{track.artists.join(", ")} · {track.album}</small></span><b>＋</b>
@@ -55,10 +55,9 @@ export function GuestPage() {
         </section>
       </div>
       <aside><section className="card"><div className="section-heading"><div><span className="kicker">Up next</span><h2>{state.queue.items.length} in queue</h2></div><span className="policy-pill">{state.queue.policy.replace("_", " ")}</span></div><QueueList queue={state.queue} /></section>
-        <section className="card identity"><span className="kicker">You are</span><div className="inline-form"><input value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={32} /><button className="secondary" onClick={() => void saveName()}>Save</button></div></section>
+        <section className="card identity"><span className="kicker">You are</span><div className="inline-form"><input aria-label="Guest name" value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={32} /><button className="secondary" onClick={() => void saveName()}>Save</button></div></section>
         <Link className="admin-link" to="/admin">Admin controls →</Link>
       </aside>
     </div>
   </Shell>;
 }
-
