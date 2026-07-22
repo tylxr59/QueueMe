@@ -45,6 +45,31 @@ describe("QueueStore", () => {
     queue.enqueue({ track: track("same"), guestId: "a", sourceType: "spotify_search", clientRequestId: requestId });
     expect(queue.snapshot().items).toHaveLength(1);
   });
+
+  it("ranks played tracks by play count and paginates without including skipped tracks", () => {
+    play("favorite", "a");
+    play("favorite", "b");
+    play("other", "a");
+    queue.enqueue({ track: track("skipped"), guestId: "a", sourceType: "spotify_search", clientRequestId: crypto.randomUUID() });
+    queue.promoteNext();
+    queue.completeCurrent("skipped", "admin_skip");
+
+    const first = queue.topTracks(1, 0);
+    expect(first.items).toHaveLength(1);
+    expect(first.items[0]).toMatchObject({ track: { title: "favorite" }, playCount: 2 });
+    expect(first.nextOffset).toBe(1);
+
+    const second = queue.topTracks(1, first.nextOffset!);
+    expect(second.items).toHaveLength(1);
+    expect(second.items[0]).toMatchObject({ track: { title: "other" }, playCount: 1 });
+    expect(second.nextOffset).toBeNull();
+  });
+
+  function play(id: string, guestId: string) {
+    queue.enqueue({ track: track(id), guestId, sourceType: "spotify_search", clientRequestId: crypto.randomUUID() });
+    queue.promoteNext();
+    queue.completeCurrent("played");
+  }
 });
 
 function track(id: string): CanonicalTrack {

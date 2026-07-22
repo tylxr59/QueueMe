@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const appSettings = sqliteTable("app_settings", {
   id: integer("id").primaryKey(),
@@ -78,7 +78,7 @@ export const queueItems = sqliteTable("queue_items", {
   startedAt: integer("started_at"),
   finishedAt: integer("finished_at"),
   terminalReason: text("terminal_reason"),
-});
+}, (table) => [index("queue_played_track_idx").on(table.status, table.trackId, table.finishedAt)]);
 
 export const playerCheckpoint = sqliteTable("player_checkpoint", {
   id: integer("id").primaryKey(),

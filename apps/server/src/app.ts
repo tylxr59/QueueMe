@@ -20,6 +20,7 @@ import {
   setupClaimSchema,
   setupConfigSchema,
   spotifyAppSchema,
+  topTracksQuerySchema,
   type AdminBootstrapResponse,
   type BootstrapResponse,
   type GuestViewSettings,
@@ -188,6 +189,12 @@ export async function buildApp() {
     const { nickname } = nicknameSchema.parse(request.body);
     sqlite.prepare("UPDATE guest_sessions SET display_name = ?, last_seen_at = ? WHERE id = ?").run(nickname, Date.now(), guest.id);
     return { id: guest.id, nickname };
+  });
+
+  app.get("/api/v1/tracks/top", async (request, reply) => {
+    ensureGuest(request, reply, sqlite, config.secureCookies);
+    const { limit, offset } = topTracksQuerySchema.parse(request.query);
+    return queue.topTracks(limit, offset);
   });
 
   app.post("/api/v1/resolve", async (request, reply) => {

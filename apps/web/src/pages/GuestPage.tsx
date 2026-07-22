@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import type { QueueSnapshot, ResolutionResponse } from "@queueme/contracts";
+import type { PublicTrack, QueueSnapshot, ResolutionResponse } from "@queueme/contracts";
 import { api, json } from "../api";
 import { ErrorBanner, NowPlaying, QueueList, Shell } from "../components";
+import { PopularTracks } from "../PopularTracks";
 import { useAppState } from "../state";
 import { createClientRequestId } from "../uuid";
 
@@ -48,6 +49,17 @@ export function GuestPage() {
     setError(null);
     searchInputRef.current?.focus();
   };
+  const addPopularTrack = async (track: PublicTrack) => {
+    const resolution = await api<ResolutionResponse>("/api/v1/resolve", json("POST", { input: track.externalUrl }));
+    const resolvedTrack = resolution.tracks.find((candidate) => candidate.providerTrackId === track.providerTrackId);
+    if (!resolvedTrack) throw new Error("Spotify could not resolve that song.");
+    const queue = await api<QueueSnapshot>("/api/v1/queue/items", json("POST", {
+      resolutionId: resolution.resolutionId,
+      spotifyTrackId: resolvedTrack.providerTrackId,
+      clientRequestId: createClientRequestId(),
+    }));
+    setQueue(queue);
+  };
 
   return <Shell title={state.jukeboxName} headerAction={state.guestViewSettings.showAdminLink
     ? <Link className="header-admin-link" to="/admin" aria-label="Admin controls" title="Admin controls"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M10 14v6" /></svg></Link>
@@ -69,6 +81,7 @@ export function GuestPage() {
             {track.artworkUrl ? <img src={track.artworkUrl} alt="" /> : <span className="thumb-placeholder">♪</span>}<span><strong>{track.title}</strong><small>{track.artists.join(", ")} · {track.album}</small></span><b>＋</b>
           </button>)}</div>}
         </section>
+        <PopularTracks revision={state.queue.revision} onAdd={addPopularTrack} />
       </div>
       <aside><section className="card"><div className="section-heading"><div><span className="kicker">Up next</span><h2>{state.queue.items.length} in queue</h2></div></div><QueueList queue={state.queue} showGuestNames={state.guestViewSettings.showGuestNames} /></section>
         <section className="card identity"><span className="kicker">You are</span>{state.guestViewSettings.allowNicknameChanges

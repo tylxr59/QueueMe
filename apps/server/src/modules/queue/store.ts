@@ -2,17 +2,9 @@ import { randomUUID } from "node:crypto";
 import type Database from "better-sqlite3";
 import type { CanonicalTrack, PendingQueueItem, QueuePolicy } from "@queueme/core";
 import { applyPinnedPositions, fifoPolicy, roundRobinPolicy } from "@queueme/core";
-import type { QueueItemView, QueueSnapshot } from "@queueme/contracts";
+import type { QueueItemView, QueueSnapshot, TopTracksResponse } from "@queueme/contracts";
 
-type JoinedRow = {
-  id: number;
-  public_id: string;
-  guest_session_id: string;
-  display_name: string;
-  status: "queued" | "current";
-  position: number | null;
-  pinned_position: number | null;
-  added_at: number;
+type TrackRow = {
   provider: "spotify";
   provider_track_id: string;
   playback_uri: string;
@@ -24,6 +16,19 @@ type JoinedRow = {
   external_url: string;
   explicit: number;
 };
+
+type JoinedRow = TrackRow & {
+  id: number;
+  public_id: string;
+  guest_session_id: string;
+  display_name: string;
+  status: "queued" | "current";
+  position: number | null;
+  pinned_position: number | null;
+  added_at: number;
+};
+
+type TopTrackRow = TrackRow & { play_count: number; last_played_at: number };
 
 export class RevisionConflictError extends Error {
   code = "REVISION_CONFLICT";
@@ -171,6 +176,26 @@ export class QueueStore {
     return row ? toView(row) : null;
   }
 
+  topTracks(limit: number, offset: number): TopTracksResponse {
+    const rows = this.sqlite.prepare(`SELECT t.provider, t.provider_track_id, t.playback_uri, t.title, t.artists_json,
+      t.album, t.duration_ms, t.artwork_url, t.external_url, t.explicit, COUNT(q.id) AS play_count,
+      MAX(q.finished_at) AS last_played_at
+      FROM queue_items q JOIN tracks t ON t.id = q.track_id
+      WHERE q.status = 'played'
+      GROUP BY t.id
+      ORDER BY play_count DESC, last_played_at DESC, t.id ASC
+      LIMIT ? OFFSET ?`).all(limit + 1, offset) as TopTrackRow[];
+    const hasMore = rows.length > limit;
+    return {
+      items: rows.slice(0, limit).map((row) => ({
+        track: toTrack(row),
+        playCount: row.play_count,
+        lastPlayedAt: row.last_played_at,
+      })),
+      nextOffset: hasMore ? offset + limit : null,
+    };
+  }
+
   private reorder(normalizePins: boolean) {
     const settings = this.settings();
     const rows = this.activeRows().filter((row) => row.status === "queued");
@@ -222,18 +247,21 @@ function toView(row: JoinedRow): QueueItemView {
     position: row.position,
     pinnedPosition: row.pinned_position,
     addedAt: row.added_at,
-    track: {
-      provider: row.provider,
-      providerTrackId: row.provider_track_id,
-      playbackUri: row.playback_uri,
-      title: row.title,
-      artists: JSON.parse(row.artists_json) as string[],
-      album: row.album,
-      durationMs: row.duration_ms,
-      artworkUrl: row.artwork_url,
-      externalUrl: row.external_url,
-      explicit: Boolean(row.explicit),
-    },
+    track: toTrack(row),
   };
 }
 
+function toTrack(row: TrackRow): CanonicalTrack {
+  return {
+    provider: row.provider,
+    providerTrackId: row.provider_track_id,
+    playbackUri: row.playback_uri,
+    title: row.title,
+    artists: JSON.parse(row.artists_json) as string[],
+    album: row.album,
+    durationMs: row.duration_ms,
+    artworkUrl: row.artwork_url,
+    externalUrl: row.external_url,
+    explicit: Boolean(row.explicit),
+  };
+}

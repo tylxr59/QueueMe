@@ -40,6 +40,10 @@ export const pinSchema = z.object({
   expectedRevision: z.number().int().nonnegative(),
 });
 export const revisionSchema = z.object({ expectedRevision: z.number().int().nonnegative() });
+export const topTracksQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(10),
+  offset: z.coerce.number().int().nonnegative().default(0),
+});
 
 export type PublicTrack = CanonicalTrack;
 export type QueueItemView = {
@@ -83,6 +87,15 @@ export type ResolutionResponse = {
   kind: "exact" | "candidates";
   tracks: CanonicalTrack[];
   expiresAt: number;
+};
+export type TopTrack = {
+  track: CanonicalTrack;
+  playCount: number;
+  lastPlayedAt: number;
+};
+export type TopTracksResponse = {
+  items: TopTrack[];
+  nextOffset: number | null;
 };
 export type AdminBootstrapResponse = BootstrapResponse & {
   spotify: { connected: boolean; accountName: string | null; deviceRequired: boolean };

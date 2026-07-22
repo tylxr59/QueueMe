@@ -3,6 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { PlaybackSnapshot, QueueSnapshot } from "@queueme/contracts";
 import { formatDuration, humanize, NowPlaying, QueueList } from "./components";
+import { PopularTrackList } from "./PopularTracks";
 
 describe("humanize", () => {
   it("turns machine state into readable copy", () => {
@@ -23,6 +24,20 @@ describe("guest-name attribution", () => {
     expect(renderToStaticMarkup(createElement(NowPlaying, { queue, playback, showGuestName: false }))).not.toContain("Alice");
     expect(renderToStaticMarkup(createElement(QueueList, { queue }))).toContain("Added by Bob");
     expect(renderToStaticMarkup(createElement(QueueList, { queue, showGuestNames: false }))).not.toContain("Bob");
+  });
+});
+
+describe("most-played songs", () => {
+  it("shows ranked tracks and their play counts", () => {
+    const markup = renderToStaticMarkup(createElement(PopularTrackList, {
+      items: [{ track, playCount: 2, lastPlayedAt: 100 }],
+      onAdd: () => undefined,
+    }));
+    expect(markup).toContain("Test song");
+    expect(markup).toContain("Test artist");
+    expect(markup).toContain("2");
+    expect(markup).toContain("plays");
+    expect(markup).toContain("Add Test song to queue");
   });
 });
 

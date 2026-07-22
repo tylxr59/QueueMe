@@ -689,6 +689,184 @@ aside {
   font-size: 1.2rem;
 }
 
+.popular-card {
+  overflow: hidden;
+}
+
+.popular-card .section-heading {
+  margin-bottom: 4px;
+}
+
+.popular-track-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.popular-track-list li {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 24px 48px minmax(0, 1fr) auto 36px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.popular-rank {
+  color: var(--subtle);
+  font-size: 0.78rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.popular-track-list img,
+.popular-art-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: linear-gradient(145deg, #39393e, #242427);
+}
+
+.popular-art-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.play-count {
+  min-width: 64px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.play-count strong {
+  color: var(--ink-strong);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.popular-play {
+  width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+}
+
+.popular-play:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.popular-play.added {
+  background: color-mix(in srgb, var(--green) 18%, transparent);
+  color: var(--green);
+}
+
+.popular-action-error {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 69, 58, 0.12);
+  color: #ff9a94;
+  font-size: 0.8rem;
+}
+
+.popular-status,
+.popular-list-end {
+  margin: 0;
+  padding: 30px 0 22px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.error-copy {
+  color: #ff9a94;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+.popular-modal {
+  width: min(680px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  background: var(--panel-solid);
+  box-shadow: var(--shadow);
+}
+
+.popular-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.popular-modal-header h2 {
+  margin: 0.28rem 0 0;
+  color: var(--ink-strong);
+  font-size: 1.65rem;
+  letter-spacing: -0.035em;
+}
+
+.modal-close {
+  width: 38px;
+  min-height: 38px;
+  flex: 0 0 auto;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.modal-close:hover {
+  background: var(--panel-hover);
+}
+
+.popular-modal-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 24px 18px;
+}
+
+.load-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 22px 0 10px;
+  color: #ff9a94;
+  font-size: 0.82rem;
+}
+
+.popular-list-end {
+  padding: 22px 0 8px;
+  font-size: 0.78rem;
+}
+
 .identity {
   padding: 20px;
 }
@@ -1158,6 +1336,56 @@ aside {
 
   .section-heading {
     align-items: flex-start;
+  }
+
+  .popular-track-list li {
+    grid-template-columns: 20px 44px minmax(0, 1fr) auto 34px;
+    gap: 9px;
+  }
+
+  .popular-track-list img,
+  .popular-art-placeholder {
+    width: 44px;
+    height: 44px;
+  }
+
+  .play-count {
+    min-width: 52px;
+    font-size: 0;
+  }
+
+  .play-count strong {
+    font-size: 0.82rem;
+  }
+
+  .play-count strong::after {
+    content: "×";
+    margin-left: 2px;
+    color: var(--muted);
+  }
+
+  .popular-play {
+    width: 34px;
+    min-height: 34px;
+  }
+
+  .modal-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .popular-modal {
+    width: 100%;
+    max-height: calc(100dvh - 24px);
+    border-radius: 22px 22px 0 0;
+  }
+
+  .popular-modal-header {
+    padding: 18px;
+  }
+
+  .popular-modal-scroll {
+    padding: 0 18px 18px;
   }
 
   .queue-list li {

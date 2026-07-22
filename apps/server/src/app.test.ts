@@ -86,4 +86,26 @@ describe("HTTP app", () => {
     expect(rename.statusCode).toBe(403);
     expect(rename.json().error.code).toBe("NICKNAME_CHANGES_DISABLED");
   });
+
+  it("serves played-track rankings in bounded pages", async () => {
+    const now = Date.now();
+    sqlite.prepare("INSERT INTO guest_sessions (id, display_name, created_at, last_seen_at) VALUES (?, ?, ?, ?)")
+      .run("history-guest", "Listener", now, now);
+    sqlite.prepare(`INSERT INTO tracks (provider, provider_track_id, playback_uri, title, artists_json, album, duration_ms,
+      artwork_url, external_url, explicit, metadata_updated_at) VALUES ('spotify', ?, ?, ?, '[\"Artist\"]', 'Album', 180000, NULL, ?, 0, ?)`)
+      .run("history-track", "spotify:track:history-track", "History Track", "https://open.spotify.com/track/history-track", now);
+    const trackId = (sqlite.prepare("SELECT id FROM tracks WHERE provider_track_id = 'history-track'").get() as { id: number }).id;
+    const insertPlay = sqlite.prepare(`INSERT INTO queue_items (public_id, track_id, guest_session_id, source_type, status,
+      client_request_id, added_at, started_at, finished_at) VALUES (?, ?, 'history-guest', 'spotify_search', 'played', ?, ?, ?, ?)`);
+    insertPlay.run(crypto.randomUUID(), trackId, crypto.randomUUID(), now, now, now);
+    insertPlay.run(crypto.randomUUID(), trackId, crypto.randomUUID(), now, now, now + 1);
+
+    const response = await app.inject({ method: "GET", url: "/api/v1/tracks/top?limit=10&offset=0" });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["set-cookie"]).toContain("q_guest=");
+    expect(response.json()).toMatchObject({
+      items: [{ track: { title: "History Track" }, playCount: 2 }],
+      nextOffset: null,
+    });
+  });
 });
