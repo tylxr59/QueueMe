@@ -1,0 +1,19 @@
+{
+  "name": "queueme",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A local-first Spotify party jukebox",
+  "type": "module",
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @queueme/server --filter @queueme/web dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm --filter @queueme/core build && pnpm --filter @queueme/contracts build && pnpm --filter @queueme/server typecheck && pnpm --filter @queueme/web typecheck",
+    "test": "pnpm -r --if-present test",
+    "start": "pnpm --filter @queueme/server start",
+    "db:generate": "pnpm --filter @queueme/server db:generate"
+  }
+}
