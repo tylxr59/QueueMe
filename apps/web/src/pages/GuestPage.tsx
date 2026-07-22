@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import type { QueueSnapshot, ResolutionResponse } from "@queueme/contracts";
 import { api, json } from "../api";
@@ -13,6 +13,7 @@ export function GuestPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [nickname, setNickname] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => { if (state) setNickname(state.guest.nickname); }, [state?.guest.nickname]);
   if (loading) return <Shell><div className="loading">Opening the queue…</div></Shell>;
   if (!state) return <Shell><ErrorBanner message={loadError} /><button onClick={() => void refresh()}>Retry</button></Shell>;
@@ -41,6 +42,12 @@ export function GuestPage() {
     try { await api("/api/v1/guest/session", json("PATCH", { nickname })); await refresh(); }
     catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to save your name."); }
   };
+  const clearSearch = () => {
+    setInput("");
+    setResults(null);
+    setError(null);
+    searchInputRef.current?.focus();
+  };
 
   return <Shell title={state.jukeboxName}>
     <div className="guest-grid">
@@ -48,7 +55,13 @@ export function GuestPage() {
         <NowPlaying queue={state.queue} playback={state.playback} />
         <section className="card add-card"><span className="kicker">Your turn</span><h1>Add a track</h1>
           <p>Paste a Spotify track link or search by song and artist.</p>
-          <form className="search-form" onSubmit={resolve}><input aria-label="Song, artist, or Spotify link" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Dancing Queen ABBA" required maxLength={300} /><button disabled={busy}>{busy ? "Working…" : "Find track"}</button></form>
+          <form className="search-form" onSubmit={resolve}>
+            <div className="search-input-wrap">
+              <input ref={searchInputRef} aria-label="Song, artist, or Spotify link" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Dancing Queen ABBA" required maxLength={300} />
+              {input && <button className="clear-search" type="button" aria-label="Clear search" onClick={clearSearch} />}
+            </div>
+            <button disabled={busy}>{busy ? "Working…" : "Find track"}</button>
+          </form>
           <ErrorBanner message={error} />
           {results?.kind === "candidates" && <div className="results">{results.tracks.map((track) => <button className="result" key={track.providerTrackId} disabled={busy} onClick={() => void enqueue(results, track.providerTrackId)}>
             {track.artworkUrl ? <img src={track.artworkUrl} alt="" /> : <span className="thumb-placeholder">♪</span>}<span><strong>{track.title}</strong><small>{track.artists.join(", ")} · {track.album}</small></span><b>＋</b>
