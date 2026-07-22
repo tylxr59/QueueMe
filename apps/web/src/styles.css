@@ -328,6 +328,13 @@ button:disabled {
   font-size: 1.02rem;
 }
 
+.queued-by {
+  display: block;
+  margin-top: 0.45rem;
+  color: var(--subtle);
+  font-size: 0.78rem;
+}
+
 .kicker {
   color: var(--accent);
   font-size: 0.7rem;
@@ -658,6 +665,56 @@ aside {
 
 .identity .inline-form {
   margin-top: 10px;
+}
+
+.assigned-name {
+  display: block;
+  margin-top: 10px;
+  color: var(--ink-strong);
+  font-size: 1.08rem;
+}
+
+.identity .status-note {
+  margin: 4px 0 0;
+}
+
+.guest-settings h3 {
+  margin-bottom: 10px;
+}
+
+.setting-row {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.setting-row span {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.setting-row strong {
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.setting-row small {
+  color: var(--subtle);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.setting-row input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
 }
 
 .admin-link {

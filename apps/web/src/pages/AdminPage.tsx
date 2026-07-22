@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { AdminBootstrapResponse, PlaybackSnapshot, QueueItemView, QueueSnapshot } from "@queueme/contracts";
+import type { AdminBootstrapResponse, GuestViewSettings, PlaybackSnapshot, QueueItemView, QueueSnapshot } from "@queueme/contracts";
 import { ApiError, api, json } from "../api";
 import { ErrorBanner, NowPlaying, QueueList, Shell, humanize } from "../components";
 
@@ -8,6 +8,7 @@ export function AdminPage() {
   const [login, setLogin] = useState(true);
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [settingsBusy, setSettingsBusy] = useState(false);
   const load = async () => { try { setData(await api<AdminBootstrapResponse>("/api/v1/admin/bootstrap")); setLogin(false); } catch (reason) { if (reason instanceof ApiError && reason.status === 401) setLogin(true); else setError(reason instanceof Error ? reason.message : "Unable to load admin."); } };
   useEffect(() => { void load(); }, []);
   const authenticate = async (event: React.FormEvent) => { event.preventDefault(); try { await api("/api/v1/admin/session", json("POST", { pin })); setPin(""); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Login failed."); } };
@@ -22,6 +23,15 @@ export function AdminPage() {
   const remove = (item: QueueItemView) => void queueAction(`/api/v1/admin/queue/items/${item.id}`, json("DELETE", { expectedRevision: data.queue.revision }));
   const unpin = (item: QueueItemView) => void queueAction(`/api/v1/admin/queue/items/${item.id}/pin`, json("DELETE", { expectedRevision: data.queue.revision }));
   const selectDevice = async (deviceId: string) => { try { await api("/api/v1/admin/device", json("PUT", { deviceId })); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Device selection failed."); } };
+  const updateGuestViewSettings = async (settings: GuestViewSettings) => {
+    setSettingsBusy(true); setError(null);
+    try {
+      const guestViewSettings = await api<GuestViewSettings>("/api/v1/admin/guest-view-settings", json("PUT", settings));
+      setData((current) => current ? { ...current, guestViewSettings } : current);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Guest settings could not be saved."); }
+    finally { setSettingsBusy(false); }
+  };
+  const toggleGuestSetting = (key: keyof GuestViewSettings, value: boolean) => void updateGuestViewSettings({ ...data.guestViewSettings, [key]: value });
   return <Shell eyebrow="Owner area" title={`${data.jukeboxName} Admin`}><div className="admin-layout">
     <section className="admin-main"><NowPlaying queue={data.queue} playback={data.playback} compact />
       <div className="control-bar"><button className="secondary" onClick={() => void command(data.playback.status === "playing" ? "pause" : "resume")}>{data.playback.status === "playing" ? "Pause" : "Resume"}</button><button onClick={() => void command("skip")}>Skip track</button></div>
@@ -31,6 +41,11 @@ export function AdminPage() {
     </section>
     <aside className="admin-aside"><section className="card"><span className="kicker">Spotify owner</span><h3>{data.spotify.connected ? data.spotify.accountName ?? "Connected" : "Not connected"}</h3>{!data.spotify.connected && <a className="button-link" href="/api/v1/admin/spotify/start">Reconnect Spotify</a>}</section>
       <section className="card"><span className="kicker">Playback device</span><h3>{data.playback.device?.name ?? "No device selected"}</h3>{data.devices.length === 0 && <p className="status-note">No devices returned by Spotify. Select librespot once in the Spotify Connect picker, then refresh here.</p>}<select value={data.playback.device?.id ?? ""} onChange={(e) => void selectDevice(e.target.value)}><option value="" disabled>Select Spotify Connect device</option>{data.devices.map((device) => <option key={device.id} value={device.id}>{device.name} · {device.type}{device.active ? " · active" : ""}</option>)}</select><button className="secondary full" onClick={() => void load()}>Refresh devices</button></section>
+      <section className="card guest-settings"><span className="kicker">Guest experience</span><h3>Names and access</h3>
+        <label className="setting-row"><span><strong>Allow name changes</strong><small>Guests can replace their generated name.</small></span><input type="checkbox" checked={data.guestViewSettings.allowNicknameChanges} disabled={settingsBusy} onChange={(event) => toggleGuestSetting("allowNicknameChanges", event.target.checked)} /></label>
+        <label className="setting-row"><span><strong>Show who queued tracks</strong><small>Displays names in Now Playing and the guest queue.</small></span><input type="checkbox" checked={data.guestViewSettings.showGuestNames} disabled={settingsBusy} onChange={(event) => toggleGuestSetting("showGuestNames", event.target.checked)} /></label>
+        <label className="setting-row"><span><strong>Show Admin controls link</strong><small>Admins can still open /admin directly.</small></span><input type="checkbox" checked={data.guestViewSettings.showAdminLink} disabled={settingsBusy} onChange={(event) => toggleGuestSetting("showAdminLink", event.target.checked)} /></label>
+      </section>
       <a className="admin-link" href="/">← Guest view</a></aside>
   </div></Shell>;
 }

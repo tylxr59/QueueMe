@@ -11,6 +11,7 @@ import {
   changePinSchema,
   deviceSchema,
   enqueueSchema,
+  guestViewSettingsSchema,
   nicknameSchema,
   pinSchema,
   queuePolicySchema,
@@ -21,6 +22,7 @@ import {
   spotifyAppSchema,
   type AdminBootstrapResponse,
   type BootstrapResponse,
+  type GuestViewSettings,
   type ServerToClientEvents,
 } from "@queueme/contracts";
 import { loadConfig } from "./config.js";
@@ -180,6 +182,9 @@ export async function buildApp() {
 
   app.patch("/api/v1/guest/session", async (request, reply) => {
     const guest = ensureGuest(request, reply, sqlite, config.secureCookies);
+    if (!getGuestViewSettings(sqlite).allowNicknameChanges) {
+      throw httpError(403, "NICKNAME_CHANGES_DISABLED", "Guest name changes are disabled by the admin.");
+    }
     const { nickname } = nicknameSchema.parse(request.body);
     sqlite.prepare("UPDATE guest_sessions SET display_name = ?, last_seen_at = ? WHERE id = ?").run(nickname, Date.now(), guest.id);
     return { id: guest.id, nickname };
@@ -289,6 +294,14 @@ export async function buildApp() {
     return { saved: true, reconnectRequired: true };
   });
 
+  app.put("/api/v1/admin/guest-view-settings", async (request) => {
+    requireAdmin(request, sqlite);
+    const settings = guestViewSettingsSchema.parse(request.body);
+    sqlite.prepare(`UPDATE app_settings SET allow_nickname_changes = ?, show_guest_names = ?, show_admin_link = ?, updated_at = ?
+      WHERE id = 1`).run(Number(settings.allowNicknameChanges), Number(settings.showGuestNames), Number(settings.showAdminLink), Date.now());
+    return getGuestViewSettings(sqlite);
+  });
+
   app.put("/api/v1/admin/queue/policy", async (request) => {
     requireAdmin(request, sqlite);
     const input = queuePolicySchema.parse(request.body);
@@ -390,8 +403,22 @@ function bootstrap(
     guest,
     queue: queue.snapshot(),
     playback: player.snapshot(),
+    guestViewSettings: getGuestViewSettings(sqlite),
     admin,
     serverTime: Date.now(),
+  };
+}
+
+function getGuestViewSettings(sqlite: Database.Database): GuestViewSettings {
+  const row = sqlite.prepare(`SELECT allow_nickname_changes, show_guest_names, show_admin_link FROM app_settings WHERE id = 1`).get() as {
+    allow_nickname_changes: number;
+    show_guest_names: number;
+    show_admin_link: number;
+  };
+  return {
+    allowNicknameChanges: Boolean(row.allow_nickname_changes),
+    showGuestNames: Boolean(row.show_guest_names),
+    showAdminLink: Boolean(row.show_admin_link),
   };
 }
 

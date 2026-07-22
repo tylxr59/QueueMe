@@ -52,7 +52,7 @@ export function GuestPage() {
   return <Shell title={state.jukeboxName}>
     <div className="guest-grid">
       <div className="primary-column">
-        <NowPlaying queue={state.queue} playback={state.playback} />
+        <NowPlaying queue={state.queue} playback={state.playback} showGuestName={state.guestViewSettings.showGuestNames} />
         <section className="card add-card"><span className="kicker">Your turn</span><h1>Add a track</h1>
           <p>Paste a Spotify track link or search by song and artist.</p>
           <form className="search-form" onSubmit={resolve}>
@@ -68,9 +68,11 @@ export function GuestPage() {
           </button>)}</div>}
         </section>
       </div>
-      <aside><section className="card"><div className="section-heading"><div><span className="kicker">Up next</span><h2>{state.queue.items.length} in queue</h2></div></div><QueueList queue={state.queue} /></section>
-        <section className="card identity"><span className="kicker">You are</span><div className="inline-form"><input aria-label="Guest name" value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={32} /><button className="secondary" onClick={() => void saveName()}>Save</button></div></section>
-        <Link className="admin-link" to="/admin">Admin controls →</Link>
+      <aside><section className="card"><div className="section-heading"><div><span className="kicker">Up next</span><h2>{state.queue.items.length} in queue</h2></div></div><QueueList queue={state.queue} showGuestNames={state.guestViewSettings.showGuestNames} /></section>
+        <section className="card identity"><span className="kicker">You are</span>{state.guestViewSettings.allowNicknameChanges
+          ? <div className="inline-form"><input aria-label="Guest name" value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={32} /><button className="secondary" onClick={() => void saveName()}>Save</button></div>
+          : <><strong className="assigned-name">{state.guest.nickname}</strong><p className="status-note">Names are assigned automatically.</p></>}</section>
+        {state.guestViewSettings.showAdminLink && <Link className="admin-link" to="/admin">Admin controls →</Link>}
       </aside>
     </div>
   </Shell>;

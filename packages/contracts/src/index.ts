@@ -18,6 +18,11 @@ export const spotifyAppSchema = z.object({
   clientSecret: z.string().trim().min(8).max(256),
 });
 export const nicknameSchema = z.object({ nickname: z.string().trim().min(1).max(32) });
+export const guestViewSettingsSchema = z.object({
+  allowNicknameChanges: z.boolean(),
+  showGuestNames: z.boolean(),
+  showAdminLink: z.boolean(),
+});
 export const resolveSchema = z.object({ input: z.string().trim().min(1).max(300) });
 export const enqueueSchema = z.object({
   resolutionId: z.string().uuid(),
@@ -62,12 +67,14 @@ export type PlaybackSnapshot = {
   device: { id: string; name: string } | null;
   error: string | null;
 };
+export type GuestViewSettings = z.infer<typeof guestViewSettingsSchema>;
 export type BootstrapResponse = {
   setupRequired: boolean;
   jukeboxName: string;
   guest: { id: string; nickname: string };
   queue: QueueSnapshot;
   playback: PlaybackSnapshot;
+  guestViewSettings: GuestViewSettings;
   admin: boolean;
   serverTime: number;
 };

@@ -12,6 +12,9 @@ export const appSettings = sqliteTable("app_settings", {
   selectedDeviceId: text("selected_device_id"),
   selectedDeviceName: text("selected_device_name"),
   selectedDeviceType: text("selected_device_type"),
+  allowNicknameChanges: integer("allow_nickname_changes", { mode: "boolean" }).notNull(),
+  showGuestNames: integer("show_guest_names", { mode: "boolean" }).notNull(),
+  showAdminLink: integer("show_admin_link", { mode: "boolean" }).notNull(),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
@@ -88,4 +91,3 @@ export const playerCheckpoint = sqliteTable("player_checkpoint", {
   lastError: text("last_error"),
   updatedAt: integer("updated_at").notNull(),
 });
-
