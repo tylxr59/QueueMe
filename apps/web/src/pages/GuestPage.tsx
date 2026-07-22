@@ -4,6 +4,7 @@ import type { QueueSnapshot, ResolutionResponse } from "@queueme/contracts";
 import { api, json } from "../api";
 import { ErrorBanner, NowPlaying, QueueList, Shell } from "../components";
 import { useAppState } from "../state";
+import { createClientRequestId } from "../uuid";
 
 export function GuestPage() {
   const { state, loading, error: loadError, refresh, setQueue } = useAppState();
@@ -30,7 +31,7 @@ export function GuestPage() {
     setBusy(true); setError(null);
     try {
       const queue = await api<QueueSnapshot>("/api/v1/queue/items", json("POST", {
-        resolutionId: resolution.resolutionId, spotifyTrackId, clientRequestId: crypto.randomUUID(),
+        resolutionId: resolution.resolutionId, spotifyTrackId, clientRequestId: createClientRequestId(),
       }));
       setQueue(queue); setInput(""); setResults(null);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to add the track."); }
