@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { humanize } from "./components";
+import { formatDuration, humanize } from "./components";
 
 describe("humanize", () => {
   it("turns machine state into readable copy", () => {
@@ -7,3 +7,9 @@ describe("humanize", () => {
   });
 });
 
+describe("formatDuration", () => {
+  it("formats milliseconds as minutes and seconds", () => {
+    expect(formatDuration(12_900)).toBe("0:12");
+    expect(formatDuration(134_000)).toBe("2:14");
+  });
+});

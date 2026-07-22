@@ -55,7 +55,7 @@ export function GuestPage() {
           </button>)}</div>}
         </section>
       </div>
-      <aside><section className="card"><div className="section-heading"><div><span className="kicker">Up next</span><h2>{state.queue.items.length} in queue</h2></div><span className="policy-pill">{state.queue.policy.replace("_", " ")}</span></div><QueueList queue={state.queue} /></section>
+      <aside><section className="card"><div className="section-heading"><div><span className="kicker">Up next</span><h2>{state.queue.items.length} in queue</h2></div></div><QueueList queue={state.queue} /></section>
         <section className="card identity"><span className="kicker">You are</span><div className="inline-form"><input aria-label="Guest name" value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={32} /><button className="secondary" onClick={() => void saveName()}>Save</button></div></section>
         <Link className="admin-link" to="/admin">Admin controls →</Link>
       </aside>
