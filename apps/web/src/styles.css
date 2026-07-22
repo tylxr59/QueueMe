@@ -756,7 +756,7 @@ aside {
   border-radius: 50%;
   background: var(--accent-soft);
   color: var(--accent);
-  font-size: 0.75rem;
+  font-size: 1.1rem;
 }
 
 .popular-play:hover {

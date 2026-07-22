@@ -156,7 +156,7 @@ export function PopularTrackList({
       <span className="play-count"><strong>{item.playCount}</strong>{item.playCount === 1 ? " play" : " plays"}</span>
       {onAdd && <button className={`popular-play${addedTrackId === item.track.providerTrackId ? " added" : ""}`} type="button"
         aria-label={`Add ${item.track.title} to queue`} title="Add to queue" disabled={addingTrackId !== null}
-        onClick={() => onAdd(item.track)}><span aria-hidden="true">{addingTrackId === item.track.providerTrackId ? "…" : addedTrackId === item.track.providerTrackId ? "✓" : "▶"}</span></button>}
+        onClick={() => onAdd(item.track)}><span aria-hidden="true">{addingTrackId === item.track.providerTrackId ? "…" : addedTrackId === item.track.providerTrackId ? "✓" : "＋"}</span></button>}
     </li>)}
   </ol>;
 }
